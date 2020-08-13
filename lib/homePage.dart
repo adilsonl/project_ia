@@ -40,31 +40,52 @@ class _MyHomePageState extends State<MyHomePage> {
                   fontSize: 36),
             ),
             RaisedButton(
-              child: Text("Atualizar"),
-              onPressed: (){
-                setState(() {
-                  
-                });
-              }),
+                child: Text("Atualizar"),
+                onPressed: () {
+                  setState(() {});
+                }),
             RaisedButton(
                 child: Text("Limpar pontos"),
                 onPressed: () {
                   markers.clear();
-                  inicio=null;
-                  fim=null;
+                  inicio = null;
+                  fim = null;
                   setState(() {});
                 }),
-                ListTile(
-                  title:  Text("Iniicio : ${inicio!=null ? inicio.name : ''}"),
-                  leading: Icon(Icons.place),
-                ),
-                ListTile(
-                  title:  Text("Fim : ${fim!=null ? fim.name : ''}"),
-                  leading: Icon(Icons.place),
-                )
-               
-                
-               
+            Card(
+              child: ListTile(
+                title: Text("Iniicio : ${inicio != null ? inicio.name : ''}"),
+                leading: Icon(Icons.place),
+                onTap: () {
+                  if (inicio != null) _goToPoint(inicio.lat, inicio.long);
+                },
+              ),
+            ),
+            Card(
+              child: ListTile(
+                title: Text("Fim : ${fim != null ? fim.name : ''}"),
+                leading: Icon(Icons.place),
+                onTap: () {
+                  if (fim != null) _goToPoint(fim.lat, fim.long);
+                },
+              ),
+            ),
+            Text("Pontos"),
+          Expanded(child:   ListView.builder(
+                itemCount: markers.length,
+                shrinkWrap: true,
+                itemBuilder: (context, i) {
+                  MarkerId key = markers.keys.elementAt(i);
+                  return Card(
+                    child: ListTile(
+                      title: Text(markers[key].markerId.value),
+                      leading: Icon(Icons.place),
+                      onTap: (){
+                        _goToPoint(markers[key].position.latitude, markers[key].position.longitude);
+                      },
+                    ),
+                  );
+                }))
           ],
         ),
       ),
@@ -121,14 +142,13 @@ class _MyHomePageState extends State<MyHomePage> {
       Map<String, dynamic> data = Map();
       data['destinos'] = [];
       markers.forEach((key, value) {
-        if(inicio.name != key.value && fim.name !=key.value){
+        if (inicio.name != key.value && fim.name != key.value) {
           data['destinos'].add({
-          "name": key.value,
-          "lat": value.position.latitude,
-          "long": value.position.longitude,
-        });
+            "name": key.value,
+            "lat": value.position.latitude,
+            "long": value.position.longitude,
+          });
         }
-        
       });
       data["inicio"] = inicio.toMap();
       data["fim"] = fim.toMap();
@@ -137,21 +157,18 @@ class _MyHomePageState extends State<MyHomePage> {
           "https://route-optmizer.herokuapp.com/get-best-route",
           data: json.encode(data));
       _launchURL(response);
-    }
-    else{
-      showDialog(context: context,
-      builder: (context){
-        return AlertDialog(
-          title: Text("Não há inicio e/ou Fim"),
-          actions: [
-            RaisedButton(
-              child: Text("Ok"),
-              onPressed: (){
-              Navigator.of(context).pop();
-            })
-          ]
-        );
-      });
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(title: Text("Não há inicio e/ou Fim"), actions: [
+              RaisedButton(
+                  child: Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  })
+            ]);
+          });
     }
   }
 
@@ -181,6 +198,16 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           });
     }
+  }
+
+  Future<void> _goToPoint(lat, long) async {
+    final GoogleMapController controller = await _controller.future;
+    final CameraPosition _point = CameraPosition(
+        bearing: 192.8334901395799,
+        target: LatLng(lat, long),
+        tilt: 59,
+        zoom: 19);
+    controller.animateCamera(CameraUpdate.newCameraPosition(_point));
   }
 
   void _add(lat, long, nome) {
