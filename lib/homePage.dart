@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_webservice/geocoding.dart';
 import 'package:project_ia/place.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
@@ -23,8 +23,11 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _textController = TextEditingController();
   Place inicio;
   Place fim;
-  final geocoding = new GoogleMapsGeocoding(
-      apiKey: "AIzaSyDSA-dGgU_aws8e5pP2kbhbvrNkSKyjvc0");
+  @override
+  void initState() {
+   Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((value) => _goToPoint(value.latitude, value.longitude));
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(
